@@ -1,0 +1,36 @@
+name: 'Review Services Action'
+description: 'Creates and removes services needed by review environments'
+inputs:
+  database:
+    description: 'Name of database to create/remove'
+    required: true
+  action:
+    description: 'Create or remove database'
+    default: 'create'
+    required: true
+  namespace:
+    description: 'Namespace to create job to'
+    required: true
+  db_user:
+    description: 'Database username (with rights to create and drop databases)'
+    required: true
+  db_password:
+    description: 'Database password'
+    required: true
+  db_host:
+    description: 'Database host'
+    required: true
+  db_port:
+    description: 'Database port'
+    required: true
+    default: 5432
+  kubeconfig:
+    description: 'Kubeconfig in yaml format that allows access to cluster to create/get/delete jobs and secrets'
+    required: true
+  default_database_name:
+    description: "Default database that exists always, as psql needs to connect to database to be able to create database"
+    default: "defaultdb"
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
+
