@@ -38,6 +38,8 @@ const createJob = async () => {
         name: action_config.namespace,
         labels: {
           environment: "review",
+          // Needed for synchronizing the secret to download images
+          app: "kubed",
         },
       },
     });
