@@ -1,6 +1,18 @@
 import * as core from "@actions/core";
+import * as crypto from "crypto";
 import { V1JobStatus } from "@kubernetes/client-node";
 import k8s = require("@kubernetes/client-node");
+
+const generateJobName = (action: string, database_name: string) => {
+  const fullJobName = `gha-review-service-${action}-${database_name}`;
+  // Job name can be only 52, as there needs to be space for appended hashes when pods created.
+  if (fullJobName.length < 53) {
+    return fullJobName;
+  } else {
+    const jobHash = crypto.createHash('sha256').update(fullJobName).digest('hex').substring(0,8);
+    return `${fullJobName.substring(0, 40)}-${jobHash}`
+  }
+}
 
 const kc = new k8s.KubeConfig();
 
@@ -23,14 +35,17 @@ const database_config = {
   defaultdb: core.getInput("default_database_name"),
 };
 
-const jobName = `gha-review-service-${action_config.action}`;
+const jobName = generateJobName(action_config.action, database_config.name);
 const k8sBatchV1Api = kc.makeApiClient(k8s.BatchV1Api);
 const k8sCoreApi = kc.makeApiClient(k8s.CoreV1Api);
 
 const createJob = async () => {
   try {
     await k8sCoreApi.readNamespace(action_config.namespace);
-  } catch {
+    core.info(`Namespace ${action_config.namespace} exists`);
+  } catch (e) {
+    const error = e as Error;
+    core.debug(error.message);
     await k8sCoreApi.createNamespace({
       apiVersion: "v1",
       kind: "Namespace",
@@ -180,7 +195,8 @@ const execute = async () => {
       loop();
     }
   } catch (e) {
-    core.setFailed(e);
+    const error = e as Error;
+    core.setFailed(error);
   }
 };
 
