@@ -153,9 +153,9 @@ export class Kubernetes {
     let duration = 0;
     while (
       (status.failed || 0) + (status.succeeded || 0) == 0 &&
-      duration < 60000
+      duration < 300000 // Wait execution to complete in 5 minutes
     ) {
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 10000));
       const result = await makeRetryedCall(
         this.k8sBatchV1Api.readNamespacedJobStatus(jobName, namespaceName)
       );
