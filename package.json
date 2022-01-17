@@ -20,17 +20,17 @@
     "@actions/core": "^1.6.0",
     "@kubernetes/client-node": "^0.16.1",
     "crypto": "^1.0.1",
-    "pgtools": "^0.3.2"
+    "not-a-log": "^1.0.1"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.22.1",
-    "@typescript-eslint/parser": "^4.22.1",
+    "@typescript-eslint/eslint-plugin": "^5.9.1",
+    "@typescript-eslint/parser": "^5.9.1",
     "@zeit/ncc": "^0.22.3",
-    "eslint": "^7.25.0",
+    "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^3.4.0",
-    "prettier": "^2.2.1",
-    "ts-node": "^9.1.1",
-    "typescript": "^4.2.4"
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.5.1",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
   }
 }
