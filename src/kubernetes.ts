@@ -4,6 +4,7 @@ import {
   BatchV1Api,
   CoreV1Api,
   CoreV1EventList,
+  HttpError,
   KubeConfig,
   V1Job,
   V1JobStatus,
@@ -80,20 +81,21 @@ export class Kubernetes {
       },
       stringData,
     };
-    if (await this.secretExists(namespaceName, jobName)) {
-      await makeRetryedCall(
-        this.k8sCoreApi.replaceNamespacedSecret(
+    try {
+      if (await this.secretExists(namespaceName, jobName)) {
+        await this.k8sCoreApi.replaceNamespacedSecret(
           jobName,
           namespaceName,
           secretBody
-        )
-      );
-      return "updated";
-    } else {
-      await makeRetryedCall(
-        this.k8sCoreApi.createNamespacedSecret(namespaceName, secretBody)
-      );
-      return "created";
+        );
+        return "updated";
+      } else {
+        await this.k8sCoreApi.createNamespacedSecret(namespaceName, secretBody);
+        return "created";
+      }
+    } catch (e) {
+      const err = e as HttpError;
+      throw new Error(`Creation/Update of secret ${jobName} failed with status ${err.statusCode} and error: \n${(err.response as any).body.message}.`)
     }
   }
 
@@ -139,12 +141,17 @@ export class Kubernetes {
         },
       },
     };
-    if (await this.jobExists(namespaceName, jobName)) {
-      await this.k8sBatchV1Api.deleteNamespacedJob(jobName, namespaceName);
+    try {
+      if (await this.jobExists(namespaceName, jobName)) {
+        await this.k8sBatchV1Api.deleteNamespacedJob(jobName, namespaceName);
+      }
+      await makeRetryedCall(
+        this.k8sBatchV1Api.createNamespacedJob(namespaceName, job)
+      );
+    } catch (e) {
+      const err = e as HttpError;
+      throw new Error(`Creation/Update of job ${jobName} failed with status ${err.statusCode} and error: \n${(err.response as any).body.message}.`)
     }
-    await makeRetryedCall(
-      this.k8sBatchV1Api.createNamespacedJob(namespaceName, job)
-    );
   }
 
   async jobSucceeded(namespaceName: string, jobName: string): Promise<boolean> {
